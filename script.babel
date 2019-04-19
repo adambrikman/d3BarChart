@@ -1,0 +1,169 @@
+// Initialize dataset array
+var dataset = [];
+
+// Initialize quarter variable
+let quarter = "";
+
+// Parse JSON data and push to dataset array
+document.addEventListener('DOMContentLoaded',function(){
+      req=new XMLHttpRequest();
+req.open("GET",'https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json',true);
+      req.send();
+      req.onload=function(){
+        json=JSON.parse(req.responseText);
+        for(var prop in json.data) {
+          /* Currency format code snippet from:
+          https://stackoverflow.com/questions/149055/how-can-i-
+          format-numbers-as-dollars-currency-string-in-
+          javascript*/
+          let dollar = (json.data[prop][1]).toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+          if(json.data[prop][0].slice(5,7) == "01") {
+              quarter = "Q1"
+          } else if(json.data[prop][0].slice(5,7) == "04") {
+              quarter = "Q2"
+          } else if(json.data[prop][0].slice(5,7) == "07") {
+              quarter = "Q3"
+          } else {
+              quarter = "Q4"
+          }
+          let year = (json.data[prop][0].slice(0,4))
+          let month = (json.data[prop][0].slice(5,7))
+         dataset.push(json.data[prop].concat([dollar]).concat([quarter]).concat(year).concat(month));
+        }
+
+// Bar chart constant variables
+const w = 800;
+const h = 400;
+const padding = 40;
+
+// Set scale for X & Y
+const xScale = d3.scaleLinear()
+.domain([d3.min(dataset, (d) => (d[4].concat(".").concat(d[5]))), d3.max(dataset, (d) => (d[4].concat(".").concat(d[5]*125)))])
+    .range([padding, w - padding]);
+
+const yScale = d3.scaleLinear()
+.domain([0, d3.max(dataset, (d) => d[1])])
+.range([h-padding, padding]);
+
+// Create SVG element
+const svg = d3.select("body")
+.append("svg")
+.attr("width", w)
+.attr("height", h)
+
+// Create div for tooltip
+var tip = d3.select("body")
+    .append("div")
+    .attr("id","tooltip")
+    .style("opacity", "0")
+
+// Create a title for the bar chart
+var header = d3.select("body")
+    .append("div")
+    .attr("id", "title")
+    .html("United States GDP")
+    .style("position", "relative")
+    .style("font-size", "40px")
+    .style("left", w/3 + "px")
+    .style("bottom", h + "px");
+
+// Create a label for the X-Axis
+var xText = d3.select("body")
+    .append("div")
+    .attr("id", "xAxisLabel")
+    .html("Years")
+    .style("position", "relative")
+    .style("left", w/2 + "px")
+    .style("bottom", padding*1.5 + "px");
+
+// Create a label for the Y-Axis
+var yText = d3.select("body")
+    .append("div")
+    .attr("id", "yAxisLabel")
+    .html("Gross Domestic Product")
+    .style("position", "relative")
+    .style("display", "inline-block")
+    .style("transform", "rotate(270deg)")
+    .style("right", padding/2 + "px")
+    .style("bottom", h-(padding*2) + "px")
+
+// Create bars for the chart
+svg.selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("rect")
+        .attr("data-date", (d, i) => (d[0]) )
+        .attr("data-gdp", (d, i) => (d[1]) )    
+        .attr("class", "bar")
+        .attr("fill","#ccff7f") // #ccffcc (light green) // bbbec1 grey
+        
+        .attr("x", (d, i) => {
+              return("x", xScale(d[4].concat(".").concat(d[5]*99+1)))
+              })
+       
+        // Set y attribute according to the scale above
+        .attr("y", (d, i) => {
+               return("y", yScale(d[1]) )
+              })
+
+        /* Set width of each bar to the table width divided
+           by the number of data points */
+        .attr("width", w/(dataset.length))
+        
+        /* Set height of bars, taking into account padding
+        and the Y Scale */
+        .attr("height", (d) => {
+              /* code snippet to adjust bar height: 
+              https://www.freecodecamp.org/forum/t/d3-bar-
+              chart-bars-spills-over-x-axis-scale-line/249483/2 */
+              return("height", ((h - padding) - yScale(d[1]) ) )
+              })
+
+        // JS Events to display tooltip
+        /* Code snippet to create tooltips using JS Events:        
+        http://bl.ocks.org/d3noob/a22c42db65eb00d4e369 */
+        .on("mouseover", function(d) {
+            tip.transition()		
+                .duration(100)
+                .style("position", "absolute")
+                .style("box-shadow", "2px 2px 20px")
+                .style("background", "#4c5056")
+                .style("font-size", 14 + "px")
+                .style("opacity", .9)
+                .style("justify-content", "center")
+            tip.html(d[0].slice(0,4) + " " + d[3] + "<br/>" + "$" + d[2] + " Billion")
+                .style("left", (d3.event.pageX) + 20 + "px")		
+                .style("top", 220 + "px")
+                .style("text-align", "center")
+                .style("align-items", "center")
+                .style("width", 150 + "px")
+                .style("height", 45 + "px")
+                .style("padding", 1 + "px")
+                .style("display", "flex")
+                .attr("data-date", d[0])
+            })				
+        .on("mouseout", function(d) {		
+            tip.transition()		
+                .duration(200)		
+                .style("opacity", 0);	
+        });
+        
+// formatting and display of the X and Y Axes
+  /* Tickformat snippet source:
+  https://stackoverflow.com/questions/16549868/d3-remove-comma-
+  delimiters-for-thousands*/
+const xAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
+
+const yAxis = d3.axisLeft(yScale);
+
+svg.append("g")
+    .attr("id", "x-axis")
+    .attr("transform", "translate(0," + (h - padding) + ")")
+    .call(xAxis);
+        
+ svg.append("g")
+        .attr("id", "y-axis")
+        .attr("transform", "translate(40," + 0 + ")")
+        .call(yAxis);
+      };  
+  });

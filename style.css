@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Quattrocento');
+
+body {
+  background-color: #4c5056;
+}
+
+.bar:hover {
+    fill: white;
+}
+
+#x-axis, #y-axis, #title, #tooltip, #yAxisLabel, #xAxisLabel  {
+    color: white;
+    text-shadow: 2px 1px 2px black;
+    font-family: Quattrocento, arial;
+}
