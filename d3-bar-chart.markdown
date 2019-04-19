@@ -2,6 +2,6 @@ D3 Bar Chart
 ------------
 
 
-A [Pen](https://codepen.io/adambrikman/pen/PLmPpq) by [adam](https://codepen.io/adambrikman) on [CodePen](https://codepen.io).
+A [D3 Bar Chart](https://codepen.io/adambrikman/full/PLmPpq) by [adam](https://codepen.io/adambrikman) on [CodePen](https://codepen.io).
 
 [License](https://codepen.io/adambrikman/pen/PLmPpq/license).
