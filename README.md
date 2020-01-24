@@ -1,5 +1,5 @@
 <!-- TITLE/ -->
-<h1>D3 Choropleth Map</h1>
+<h1>D3 Bar Chart</h1>
 <!-- /TITLE -->
 
 <!-- DESCRIPTION/ -->
